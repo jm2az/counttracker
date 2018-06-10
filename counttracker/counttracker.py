@@ -39,9 +39,24 @@ class CountTracker:
         Remove old events from history
         An old event is one that occurred more than MEMORY_TIME_LIMIT seconds before the current time
         :param current_time: time in seconds
-        :return:
+        :return: None
         """
-        pass
+        oldest_event_second_allowed = EventSecond(current_time - self._MEMORY_TIME_LIMIT)
+
+        while True:
+            try:
+                oldest_event_second = self._history[0]
+            except IndexError:
+                # history is empty
+                break
+            if oldest_event_second < oldest_event_second_allowed:
+                # The oldest event second is outside the accepted amount of time to keep track of
+                # Remove it from history and check the next oldest
+                self._history.popleft()
+            else:
+                # The oldest event second is still recent enough to keep track of
+                break
+
 
     def log_event(self):
         """

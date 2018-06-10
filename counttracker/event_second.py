@@ -43,3 +43,6 @@ class EventSecond:
     def __ge__(self, other):
         return not (self < other)
 
+    def __repr__(self):
+        return "Time: {}, count: {}".format(self.timestamp, self.count)
+
