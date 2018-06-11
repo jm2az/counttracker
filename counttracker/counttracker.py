@@ -9,7 +9,7 @@ class CountTracker:
     Precision is to the current second.
     """
     def __init__(self):
-        # History is a double ended queue, acting as a doubly linked list.
+        # History is a double ended queue to allow for fast pops on the left and fast appends on the right.
         # It will remain sorted by timestamp, with earlier times occurring further to the left,
         #   and later times occurring further to the right
         # Events that occur earlier than the MEMORY_TIME_LIMIT will be removed in history
@@ -86,4 +86,29 @@ class CountTracker:
         self._remove_old_events(current_time)
 
     def get_event_counts(self, duration):
-        raise NotImplementedError("log_event not implemented yet.")
+        """
+        Get the number of events that have happened in the past X minutes, specified by 'duration'
+
+        :param duration: Number of seconds into the past to count events of
+        :return: total number of events that occurred in the past 'duration' seconds
+        """
+        current_time = time.time()
+
+        assert duration >= 0, "Duration must be a nonnegative integer"
+        assert isinstance(duration, int), "Duration must be a nonnegative integer"
+
+        # duration should not be longer than the memory time limit
+        if duration > self._MEMORY_TIME_LIMIT:
+            duration = self._MEMORY_TIME_LIMIT
+
+        total_count = 0
+        earliest_time_to_count = EventSecond(current_time - duration)
+        index = len(self._history) - 1
+
+        # Continue going backward starting from the end of history
+        #   until we either exhaust all the history or find a timestamp that's too early
+        while index >= 0 and self._history[index] > earliest_time_to_count:
+            total_count += self._history[index].count
+            index -= 1
+
+        return total_count

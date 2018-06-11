@@ -1,4 +1,5 @@
 import time
+import pytest
 
 from .context import counttracker
 
@@ -152,3 +153,43 @@ def test_log_event_previous_event_is_different_time_old_event_removed():
     assert len(history) == 2  # First event second was removed
     assert history[0].timestamp == int(current_time - 1)
     assert history[1].timestamp == int(current_time)
+
+
+### Test get_event_counts ###
+def test_get_event_counts_none():
+    tracker = counttracker.CountTracker()
+
+    assert tracker.get_event_counts(0) == 0  # No events
+    assert tracker.get_event_counts(1) == 0  # No events
+    assert tracker.get_event_counts(400) == 0  # No events
+
+
+def test_get_event_counts_invalid_type():
+    tracker = counttracker.CountTracker()
+
+    with pytest.raises(AssertionError):
+        tracker.get_event_counts(-1)  # Duration can't be negative
+    with pytest.raises(AssertionError):
+        tracker.get_event_counts(1.5)  # Duration must be integer
+
+
+def test_get_event_counts_none():
+    current_time = time.time()
+    tracker = counttracker.CountTracker()
+
+    es0 = counttracker.EventSecond(current_time - 20)
+    es0.count = 1
+    es1 = counttracker.EventSecond(current_time - 10)
+    es1.count = 2
+    es2 = counttracker.EventSecond(current_time - 5)
+    es2.count = 5
+
+    tracker._history.append(es0)
+    tracker._history.append(es1)
+    tracker._history.append(es2)
+
+    assert tracker.get_event_counts(30) == 8  # All events
+    assert tracker.get_event_counts(15) == 7
+    assert tracker.get_event_counts(7) == 5
+    assert tracker.get_event_counts(5) == 0  # Don't include the timestamp 5 seconds away
+    assert tracker.get_event_counts(600) == 8  # Treat 600 seconds as 5 minutes
