@@ -3,6 +3,8 @@ class EventSecond:
     Keeps track of the number of events that have occurred at the current second in time.
     Initializes the count to zero.
     """
+    __slots__ = ('timestamp', 'count')
+
     def __init__(self, unix_timestamp):
         """
         Initialize the instance with a count of zero

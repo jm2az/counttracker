@@ -9,30 +9,6 @@ def test_init():
     assert tracker is not None
 
 
-### Test _current_time_is_in_history ###
-def test_current_time_is_in_history_empty():
-    tracker = counttracker.CountTracker()
-    current_time = time.time()
-
-    assert not tracker._current_time_is_in_history(int(current_time))
-
-
-def test_current_time_is_in_history_false():
-    tracker = counttracker.CountTracker()
-    current_time = time.time()
-    tracker.log_event()
-
-    assert not tracker._current_time_is_in_history(int(current_time) + 1)
-
-
-def test_current_time_is_in_history_true():
-    tracker = counttracker.CountTracker()
-    current_time = time.time()
-    tracker.log_event()
-
-    assert tracker._current_time_is_in_history(int(current_time))
-
-
 ### Test _remove_old_events ###
 def test_remove_old_events_empty():
     tracker = counttracker.CountTracker()
@@ -101,9 +77,9 @@ def test_log_event_one_event():
     tracker.log_event()
     history = tracker._history
 
-    assert len(history) == 1
-    assert history[0].timestamp == int(current_time)
-    assert history[0].count == 1
+    assert len(history) == 0  # Event not in history yet
+    assert int(tracker._last_time_logged) == int(current_time)
+    assert tracker._last_time_logged_count == 1
 
 
 def test_log_event_previous_event_is_same_time():
@@ -114,45 +90,47 @@ def test_log_event_previous_event_is_same_time():
     tracker.log_event()
     history = tracker._history
 
-    assert len(history) == 1  # Still only one event second is logged
-    assert history[0].timestamp == int(current_time)
-    assert history[0].count == 2 # Two events occurred at only event second
+    assert len(history) == 0  # Events not in history yet
+    assert tracker._last_time_logged == int(current_time)
+    assert tracker._last_time_logged_count == 2
 
 
 def test_log_event_previous_event_is_different_time():
     tracker = counttracker.CountTracker()
     current_time = time.time()
 
-    previous_second = counttracker.EventSecond(current_time - 1)
-    previous_second.log_event()
-    tracker._history.append(previous_second)
-    tracker.log_event()
-    history = tracker._history
-
-    assert len(history) == 2  # Now two event seconds are logged
-    assert history[0].timestamp != int(current_time)
-    assert history[0].count == 1  # old event second has count 1
-    assert history[1].count == 1  # new event second has count 1
-
-
-def test_log_event_previous_event_is_different_time_old_event_removed():
-    tracker = counttracker.CountTracker()
-    current_time = time.time()
-
-    tracker._history.append(counttracker.EventSecond(current_time - 301))
-    tracker._history.append(counttracker.EventSecond(current_time - 1))
-
-    history = tracker._history
-
-    assert history[0].timestamp == int(current_time - 301)
-    assert history[1].timestamp == int(current_time - 1)
+    # previous_second = counttracker.EventSecond(current_time - 1)
+    # previous_second.count += 1
+    # tracker._history.append(previous_second)
+    tracker._last_time_logged = int(current_time-1)
+    tracker._last_time_logged_count = 1
 
     tracker.log_event()
     history = tracker._history
 
-    assert len(history) == 2  # First event second was removed
+    assert len(history) == 1  # Last event is not in history yet
     assert history[0].timestamp == int(current_time - 1)
-    assert history[1].timestamp == int(current_time)
+    assert history[0].count == 1  # old event second has count 1
+
+
+# def test_log_event_previous_event_is_different_time_old_event_removed():
+#     tracker = counttracker.CountTracker()
+#     current_time = time.time()
+#
+#     tracker._history.append(counttracker.EventSecond(current_time - 301))
+#     tracker._history.append(counttracker.EventSecond(current_time - 1))
+#
+#     history = tracker._history
+#
+#     assert history[0].timestamp == int(current_time - 301)
+#     assert history[1].timestamp == int(current_time - 1)
+#
+#     tracker.log_event()
+#     history = tracker._history
+#
+#     assert len(history) == 2  # Last event not logged yet
+#     assert history[0].timestamp == int(current_time - 1)
+#     assert history[1].timestamp == int(current_time)
 
 
 ### Test get_event_counts ###
@@ -173,7 +151,7 @@ def test_get_event_counts_invalid_type():
         tracker.get_event_counts(1.5)  # Duration must be integer
 
 
-def test_get_event_counts_none():
+def test_get_event_counts_some():
     current_time = time.time()
     tracker = counttracker.CountTracker()
 
@@ -193,3 +171,31 @@ def test_get_event_counts_none():
     assert tracker.get_event_counts(7) == 5
     assert tracker.get_event_counts(5) == 0  # Don't include the timestamp 5 seconds away
     assert tracker.get_event_counts(600) == 8  # Treat 600 seconds as 5 minutes
+
+
+def test_get_event_counts_one_event_logged():
+    current_time = time.time()
+    tracker = counttracker.CountTracker()
+
+    tracker.log_event()
+
+    assert tracker.get_event_counts(1) == 1
+
+
+### Test load ###
+# Must be able to handle 1 million events per second
+def test_million_events():
+    tracker = counttracker.CountTracker()
+
+    start = time.time()
+
+    # Log 2 million events
+    for _ in range(2000000):
+        tracker.log_event()
+
+    end = time.time()
+
+    total_time = end - start
+
+    assert tracker.get_event_counts(4) == 2000000
+    assert total_time <= 2
