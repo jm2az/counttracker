@@ -14,6 +14,7 @@ Run tests:
 For a more comprehensive report of code coverage:
 `pytest --cov=counttracker --cov-report html`
 
+* To view coverage, open `htmlcov/index.html` in a browser
+
 ## Documentation
-To view documentation, go to the following file and open it in a browser:
-_build/html/index.html
+To view documentation, open `_build/html/index.html` in a browser:
