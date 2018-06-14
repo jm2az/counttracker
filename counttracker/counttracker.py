@@ -6,7 +6,8 @@ from .event_second import EventSecond
 class CountTracker:
     """
     Keeps track of the counts of events that have happened over the past 5 minutes.
-    Precision is to the current second.
+    Precision is to the current second. So for example, if an event happens at 5:50 and 12.34 seconds,
+    it will be considered to have happened at 5:50 and 12 seconds, truncating the milliseconds associated.
     """
     def __init__(self):
         # History is a double ended queue to allow for fast pops on the left and fast appends on the right.
@@ -81,10 +82,14 @@ class CountTracker:
 
     def get_event_counts(self, duration):
         """
-        Get the number of events that have happened in the past X minutes, specified by 'duration'
+        Get the number of events that have happened in the past X seconds, specified by 'duration'.
+        This includes events that have been logged at the current second, but does not include
+        events loggest at (current_time - duration).
+          As an example, if we are calling get_event_counts(4) at time 20, it will return
+          the events that happened at time 17, 18, 19, and 20.
 
-        :param duration: Number of seconds into the past to count events of
-        :return: total number of events that occurred in the past 'duration' seconds
+        :param duration: integer: Number of seconds into the past to count events of
+        :return: Total number of events that occurred in the past 'duration' seconds
         """
         current_time = time.time()
 
