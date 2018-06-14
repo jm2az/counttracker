@@ -113,26 +113,6 @@ def test_log_event_previous_event_is_different_time():
     assert history[0].count == 1  # old event second has count 1
 
 
-# def test_log_event_previous_event_is_different_time_old_event_removed():
-#     tracker = counttracker.CountTracker()
-#     current_time = time.time()
-#
-#     tracker._history.append(counttracker.EventSecond(current_time - 301))
-#     tracker._history.append(counttracker.EventSecond(current_time - 1))
-#
-#     history = tracker._history
-#
-#     assert history[0].timestamp == int(current_time - 301)
-#     assert history[1].timestamp == int(current_time - 1)
-#
-#     tracker.log_event()
-#     history = tracker._history
-#
-#     assert len(history) == 2  # Last event not logged yet
-#     assert history[0].timestamp == int(current_time - 1)
-#     assert history[1].timestamp == int(current_time)
-
-
 ### Test get_event_counts ###
 def test_get_event_counts_none():
     tracker = counttracker.CountTracker()
