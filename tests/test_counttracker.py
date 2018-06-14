@@ -182,6 +182,29 @@ def test_get_event_counts_one_event_logged():
     assert tracker.get_event_counts(1) == 1
 
 
+### Integration testing ###
+def test_log_for_longer_than_max_time():
+    max_time = 2  # 2 seconds
+    total_time_logged = 3  # 3 seconds
+
+    tracker = counttracker.CountTracker()
+    start = time.time()
+
+    # Modify time limit for testing
+    tracker._MEMORY_TIME_LIMIT = max_time
+
+    # Log 3 events for 3 seconds, 1 event per second
+    total_events_logged = 0
+    while time.time() - start < total_time_logged:
+        tracker.log_event()
+        total_events_logged += 1
+        time.sleep(1)
+
+    total_events_retained = tracker.get_event_counts(total_time_logged)
+
+    assert total_events_retained < total_events_logged  # Some events should be 'forgotten' from history
+
+
 ### Test load ###
 # Must be able to handle 1 million events per second
 def test_million_events():
