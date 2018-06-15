@@ -95,15 +95,13 @@ class CountTracker:
 
         assert duration >= 0, "Duration must be a nonnegative integer"
         assert isinstance(duration, int), "Duration must be a nonnegative integer"
+        assert duration <= self._MEMORY_TIME_LIMIT, \
+            "Duration must be less than or equal to {} seconds".format(self._MEMORY_TIME_LIMIT)
 
         self._log_latest_second()
 
         # Remove old events
         self._remove_old_events(current_time)
-
-        # duration should not be longer than the memory time limit
-        if duration > self._MEMORY_TIME_LIMIT:
-            duration = self._MEMORY_TIME_LIMIT
 
         total_count = 0
         earliest_time_to_count = EventSecond(current_time - duration)

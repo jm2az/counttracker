@@ -119,7 +119,13 @@ def test_get_event_counts_none():
 
     assert tracker.get_event_counts(0) == 0  # No events
     assert tracker.get_event_counts(1) == 0  # No events
-    assert tracker.get_event_counts(400) == 0  # No events
+
+
+def test_get_event_counts_duration_too_long():
+    tracker = counttracker.CountTracker()
+
+    with pytest.raises(AssertionError):
+        tracker.get_event_counts(500)
 
 
 def test_get_event_counts_invalid_type():
@@ -150,9 +156,11 @@ def test_get_event_counts_some():
     assert tracker.get_event_counts(15) == 7
     assert tracker.get_event_counts(7) == 5
     assert tracker.get_event_counts(5) == 0  # Don't include the timestamp 5 seconds away
-    assert tracker.get_event_counts(600) == 8  # Treat 600 seconds as 5 minutes
+    with pytest.raises(AssertionError):
+        tracker.get_event_counts(600)  # Treat 600 seconds as 5 minutes
 
 
+### Integration testing ###
 def test_get_event_counts_one_event_logged():
     current_time = time.time()
     tracker = counttracker.CountTracker()
@@ -161,8 +169,6 @@ def test_get_event_counts_one_event_logged():
 
     assert tracker.get_event_counts(1) == 1
 
-
-### Integration testing ###
 def test_log_for_longer_than_max_time():
     max_time = 2  # 2 seconds
     total_time_logged = 3  # 3 seconds
@@ -180,14 +186,14 @@ def test_log_for_longer_than_max_time():
         total_events_logged += 1
         time.sleep(1)
 
-    total_events_retained = tracker.get_event_counts(total_time_logged)
+    total_events_retained = tracker.get_event_counts(max_time)
 
     assert total_events_retained < total_events_logged  # Some events should be 'forgotten' from history
 
 
 ### Test load ###
 # Must be able to handle 1 million events per second
-def test_million_events():
+def test_two_million_events():
     tracker = counttracker.CountTracker()
 
     start = time.time()
