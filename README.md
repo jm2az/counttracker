@@ -1,5 +1,10 @@
 # counttracker
 
+CountTracker  keeps track of the counts of events that have happened over the past 5 minutes.
+Precision is to the current second.
+So for example, if an event happens at 5:50 and 12.34 seconds,
+it will be considered to have happened at 5:50 and 12 seconds, truncating the milliseconds associated.
+
 ## Setup
 Clone the repo:
 `git clone https://github.com/jm2az/counttracker.git`
