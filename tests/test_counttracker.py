@@ -113,6 +113,19 @@ def test_log_event_previous_event_is_different_time():
     assert history[0].count == 1  # old event second has count 1
 
 
+def test_log_event_more_events_than_history_will_hold():
+    tracker = counttracker.CountTracker()
+    tracker._MEMORY_TIME_LIMIT = 1
+
+    tracker.log_event()
+    time.sleep(1)
+    tracker.log_event()  # Should clear out first event
+
+    history = tracker._history
+
+    assert len(history) == 1
+
+
 ### Test get_event_counts ###
 def test_get_event_counts_none():
     tracker = counttracker.CountTracker()

@@ -58,6 +58,7 @@ events loggest at (current_time - duration).</p>
 <blockquote>
 <div>As an example, if we are calling get_event_counts(4) at time 20, it will return
 the events that happened at time 17, 18, 19, and 20.</div></blockquote>
+<p>Will raise an error if duration is larger than 300 seconds, or 5 minutes.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -74,8 +75,6 @@ the events that happened at time 17, 18, 19, and 20.</div></blockquote>
 <dt id="counttracker.CountTracker.log_event">
 <code class="descname">log_event</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#counttracker.CountTracker.log_event" title="Permalink to this definition">¶</a></dt>
 <dd><p>Log event at the current time (second).</p>
-<p>If an event has already occurred at the current second, increase that second’s count by 1.
-Otherwise, append a ‘cached’ second.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />

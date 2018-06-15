@@ -16,7 +16,8 @@ class CountTracker:
         # Events that occur earlier than the MEMORY_TIME_LIMIT will be removed in history
         self._MEMORY_TIME_LIMIT = 300  # 5 minutes * 60 seconds per minute
 
-        self._history = deque(maxlen=self._MEMORY_TIME_LIMIT)  # Prevents the queue from getting too long
+        self._history = deque(maxlen=self._MEMORY_TIME_LIMIT)  # Prevents the queue from getting too
+                                                               # long and causing a memory leakage
         self._last_time_cleared = time.time()
         self._last_time_logged = None
         self._last_time_logged_count = 0
@@ -60,9 +61,6 @@ class CountTracker:
         """
         Log event at the current time (second).
 
-        If an event has already occurred at the current second, increase that second's count by 1.
-        Otherwise, append a 'cached' second.
-
         :return: None
         """
 
@@ -87,6 +85,7 @@ class CountTracker:
         events loggest at (current_time - duration).
           As an example, if we are calling get_event_counts(4) at time 20, it will return
           the events that happened at time 17, 18, 19, and 20.
+        Will raise an error if duration is larger than 300 seconds, or 5 minutes.
 
         :param duration: integer: Number of seconds into the past to count events of
         :return: Total number of events that occurred in the past 'duration' seconds
@@ -100,7 +99,7 @@ class CountTracker:
 
         self._log_latest_second()
 
-        # Remove old events
+        # Remove old events as they're unnecessary
         self._remove_old_events(current_time)
 
         total_count = 0
